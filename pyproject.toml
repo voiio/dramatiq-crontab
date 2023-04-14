@@ -1,0 +1,89 @@
+[build-system]
+requires = ["flit_core>=3.2", "flit_scm", "wheel"]
+build-backend = "flit_scm:buildapi"
+
+[project]
+name = "dramatiq-crontab"
+authors = [
+  { name = "Rust Saiargaliev", email = "fly.amureki@gmail.com" },
+  { name = "Johannes Maron", email = "johannes@maron.family" },
+  { name = "Mostafa Mohamed", email = "mostafa.anm91@gmail.com" },
+  { name = "Jacqueline Kraus", email = "jacquelinekraus1992@gmail.com" },
+]
+readme = "README.md"
+license = { file = "LICENSE" }
+keywords = ["Django", "Dramatiq", "tasks", "scheduler"]
+dynamic = ["version", "description"]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Programming Language :: Python",
+  "Environment :: Web Environment",
+  "License :: OSI Approved :: BSD License",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Topic :: Communications :: Email",
+  "Topic :: Text Processing :: Markup :: Markdown",
+  "Topic :: Software Development",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Framework :: Django",
+  "Framework :: Django :: 3.2",
+  "Framework :: Django :: 4.1",
+  "Framework :: Django :: 4.2",
+]
+requires-python = ">=3.8"
+dependencies = ["dramatiq", "apscheduler", "django"]
+
+[project.optional-dependencies]
+test = [
+  "pytest",
+  "pytest-cov",
+  "pytest-django",
+  "dramatiq[redis]",
+  "backports.zoneinfo;python_version<'3.9'"
+]
+sentry = ["sentry-sdk"]
+
+[project.urls]
+Project-URL = "https://github.com/voiio/dramatiq-crontab"
+Changelog = "https://github.com/voiio/dramatiq-crontab/releases"
+
+[tool.flit.module]
+name = "dramatiq_crontab"
+
+[tool.setuptools_scm]
+write_to = "dramatiq_crontab/_version.py"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--cov --tb=short -rxs"
+testpaths = ["tests"]
+DJANGO_SETTINGS_MODULE = "tests.testapp.settings"
+
+[tool.coverage.run]
+source = ["dramatiq_crontab"]
+
+[tool.coverage.report]
+show_missing = true
+
+[tool.isort]
+atomic = true
+line_length = 88
+known_first_party = "dramatiq_crontab, tests"
+include_trailing_comma = true
+default_section = "THIRDPARTY"
+combine_as_imports = true
+
+[tool.pydocstyle]
+add_ignore = "D1"
+
+[tool.djlint]
+profile="django"
+indent=2
+max_line_length=120
+exclude=".direnv,.venv,venv"

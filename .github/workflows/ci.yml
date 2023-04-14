@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+
+  dist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - run: python -m pip install --upgrade pip build wheel twine
+      - run: python -m build --sdist --wheel
+      - run: python -m twine check dist/*
+      - uses: actions/upload-artifact@v3
+        with:
+          path: dist/*
+
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        lint-command:
+          - bandit -r . -x ./tests
+          - black --check --diff .
+          - flake8 .
+          - isort --check-only --diff .
+          - pydocstyle .
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+          cache: 'pip'
+          cache-dependency-path: 'linter-requirements.txt'
+      - run: python -m pip install -r linter-requirements.txt
+      - run: ${{ matrix.lint-command }}
+
+  pytest:
+    needs:
+      - lint
+    strategy:
+      matrix:
+        os:
+          - "ubuntu-latest"
+        python-version:
+          - "3.8"
+          - "3.9"
+          - "3.10"
+          - "3.11"
+        django-version:
+          - "3.2"  # LTS
+          - "4.1"
+          - "4.2"  # LTS
+        extras:
+          - "test"
+          - "test,sentry"
+
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - run: python -m pip install .[${{ matrix.extras }}]
+    - run: python -m pip install django~=${{ matrix.django-version }}.0
+    - run: python -m pytest
+    - uses: codecov/codecov-action@v3
