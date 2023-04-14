@@ -1,6 +1,6 @@
 # Dramatiq Crontab
 
-![dramtiq-crontab logo: person in front of a schedule](https://raw.githubusercontent.com/voiio/dramtiq-crontab/main/dramatiq-crontab.png)
+![dramtiq-crontab logo: person in front of a schedule](https://raw.githubusercontent.com/voiio/dramatiq-crontab/main/dramatiq-crontab.png)
 
 Cron style scheduler for asynchronous Dramatiq tasks in Django.
 
