@@ -9,8 +9,11 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import os
 from pathlib import Path
+
+import dramatiq
+from dramatiq.brokers.stub import StubBroker
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -38,6 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "dramatiq_crontab",
+    "tests.testapp",
 ]
 
 MIDDLEWARE = [
@@ -77,9 +81,13 @@ WSGI_APPLICATION = "testapp.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "NAME": ":memory:",
     }
 }
+
+DRAMATIQ_CRONTAB = {"REDIS_URL": os.getenv("REDIS_URL", "redis://localhost:6379/0")}
+
+dramatiq.set_broker(StubBroker())
 
 
 # Password validation

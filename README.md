@@ -22,7 +22,7 @@ python3 -m pip install dramatiq-crontab
 python3 -m pip install dramatiq-crontab[sentry]  # with sentry cron monitor support
 ```
 
-If you use Django:
+Add `dramatiq_crontab` to your `INSTALLED_APPS` in `settings.py`:
 
 ```python
 # settings.py
@@ -30,6 +30,24 @@ INSTALLED_APPS = [
     'dramatiq_crontab',
     # ...
 ]
+```
+
+Finally, you lauch the scheduler in a separate process:
+
+```ShellSession
+python3 manage.py crontab
+```
+
+### Setup Redis as a lock backend (optional)
+
+If you use Redis as a broker, you can use Redis as a lock backend as well.
+The lock backend is used to prevent multiple instances of the scheduler from running at the same time.
+
+```python
+# settings.py
+DRAMATIQ_CRONTAB = {
+    "REDIS_URL": "redis://localhost:6379/0",
+}
 ```
 
 ## Usage
@@ -50,6 +68,23 @@ def my_task():
 
 If you use [Sentry][sentry] you can add cron monitors to your tasks.
 The monitor's slug will be the actor's name. Like `my_task` in the example above.
+
+
+### The crontab command
+
+```ShellSession
+$ python3 manage.py crontab --help
+usage: manage.py crontab [-h] [--no-task-loading] [--no-heartbeat] [--version] [-v {0,1,2,3}]
+                         [--settings SETTINGS] [--pythonpath PYTHONPATH] [--traceback] [--no-color]
+                         [--force-color] [--skip-checks]
+
+Run dramatiq task scheduler for all tasks with the `cron` decorator.
+
+options:
+  -h, --help            show this help message and exit
+  --no-task-loading     Don't load tasks from installed apps.
+  --no-heartbeat        Don't start the heartbeat actor.
+```
 
 [dramatiq]: https://dramatiq.io/
 [apscheduler]: https://apscheduler.readthedocs.io/en/stable/
