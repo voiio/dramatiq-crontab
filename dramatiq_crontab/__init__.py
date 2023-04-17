@@ -47,26 +47,24 @@ def cron(schedule):
     """
 
     def decorator(func):
-        minute, hour, day_of_month, month, day_of_week = schedule.split(" ")
+        *_, day_of_week = schedule.split(" ")
 
-        try:
-            day_of_week = {
-                "mon": 0,
-                "tue": 1,
-                "wed": 2,
-                "thu": 3,
-                "fri": 4,
-                "sat": 5,
-                "sun": 6,
-                "*": "*",
-            }[day_of_week.lower()]
-        except KeyError as e:
+        if day_of_week.lower() not in (
+            "*",
+            "mon",
+            "tue",
+            "wed",
+            "thu",
+            "fri",
+            "sat",
+            "sun",
+        ):
             # CronTrigger uses Python's timezone dependent first weekday,
             # so in Berlin monday is 0 and sunday is 6. We use literals to avoid
             # confusion. Literals are also more readable and crontab conform.
             raise ValueError(
                 "Please use a literal day of week (Mon, Tue, Wed, Thu, Fri, Sat, Sun) or *"
-            ) from e
+            )
 
         fn = getattr(func, "send")
         if monitor is not None:
@@ -74,12 +72,8 @@ def cron(schedule):
 
         scheduler.add_job(
             fn,
-            CronTrigger(
-                hour=hour,
-                minute=minute,
-                day=day_of_month,
-                month=month,
-                day_of_week=day_of_week,
+            CronTrigger.from_crontab(
+                schedule,
                 timezone=timezone.get_default_timezone(),
             ),
             name=func.actor_name,

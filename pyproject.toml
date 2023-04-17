@@ -44,10 +44,11 @@ test = [
   "pytest",
   "pytest-cov",
   "pytest-django",
-  "dramatiq[redis]",
+  "dramatiq",
   "backports.zoneinfo;python_version<'3.9'"
 ]
 sentry = ["sentry-sdk"]
+redis = ["redis"]
 
 [project.urls]
 Project-URL = "https://github.com/voiio/dramatiq-crontab"
@@ -78,6 +79,7 @@ known_first_party = "dramatiq_crontab, tests"
 include_trailing_comma = true
 default_section = "THIRDPARTY"
 combine_as_imports = true
+multi_line_output = 3
 
 [tool.pydocstyle]
 add_ignore = "D1"
