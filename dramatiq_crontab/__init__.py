@@ -2,6 +2,7 @@
 
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
+from django.utils import timezone
 
 from . import _version
 
@@ -16,13 +17,6 @@ VERSION = _version.version_tuple
 
 __all__ = ["cron", "scheduler"]
 
-try:
-    from django.utils import timezone
-except ImportError:
-    timezone = None
-
-
-__all__ = ["cron"]
 
 scheduler = BlockingScheduler()
 
