@@ -1,0 +1,9 @@
+# https://docs.codecov.com/docs/codecovyml-reference
+coverage:
+  status:
+    patch:
+      default:
+        target: 100%
+        only_pulls: true
+codecov:
+  require_ci_to_pass: true
