@@ -66,7 +66,7 @@ class Command(BaseCommand):
         else:
             self.launch_scheduler()
 
-    def launch_scheduler(self):  # pragma: no cover
+    def launch_scheduler(self):
         signal.signal(signal.SIGTERM, kill_softly)
         self.stdout.write(self.style.SUCCESS("Starting scheduler…"))
         try:
