@@ -40,7 +40,7 @@ def cron(schedule):
     The monitors timezone should be set to Europe/Berlin.
     """
 
-    def decorator(func):
+    def decorator(actor):
         *_, day_of_week = schedule.split(" ")
 
         if day_of_week.lower() not in (
@@ -60,20 +60,19 @@ def cron(schedule):
                 "Please use a literal day of week (Mon, Tue, Wed, Thu, Fri, Sat, Sun) or *"
             )
 
-        fn = getattr(func, "send")
         if monitor is not None:
-            fn = monitor(func.actor_name)(fn)
+            actor.fn = monitor(actor.actor_name)(actor.fn)
 
         scheduler.add_job(
-            fn,
+            actor.send,
             CronTrigger.from_crontab(
                 schedule,
                 timezone=timezone.get_default_timezone(),
             ),
-            name=func.actor_name,
+            name=actor.actor_name,
         )
         # We don't add the Sentry monitor on the actor itself, because we only want to
         # monitor the cron job, not the actor itself, or it's direct invocations.
-        return func
+        return actor
 
     return decorator
