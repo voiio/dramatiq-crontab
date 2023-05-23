@@ -5,6 +5,7 @@ from apscheduler.triggers.cron import CronTrigger
 from django.utils import timezone
 
 from . import _version
+from .utils import jobstores
 
 try:
     from sentry_sdk.crons import monitor
@@ -18,7 +19,7 @@ VERSION = _version.version_tuple
 __all__ = ["cron", "scheduler"]
 
 
-scheduler = BlockingScheduler()
+scheduler = BlockingScheduler(jobstores=jobstores)
 
 
 def cron(schedule):

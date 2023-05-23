@@ -4,22 +4,13 @@ from unittest.mock import Mock
 import pytest
 from django.core.management import call_command
 
+import dramatiq_crontab.utils
 from dramatiq_crontab.management.commands import crontab
 
 
 def test_kill_softly():
     with pytest.raises(KeyboardInterrupt):
         crontab.kill_softly(None, None)
-
-
-def test_get_redis_client__none(settings):
-    settings.DRAMATIQ_CRONTAB = {}
-    assert crontab.get_redis_client() is None
-
-
-@pytest.mark.skipif(crontab.redis is None, reason="redis is not installed")
-def test_get_redis_client():
-    assert crontab.get_redis_client() is not None
 
 
 class TestCrontab:
@@ -48,9 +39,9 @@ class TestCrontab:
             assert "Loaded tasks from tests.testapp." in stdout.getvalue()
             assert "Scheduling heartbeat." not in stdout.getvalue()
 
-    @pytest.mark.skipif(crontab.redis is None, reason="redis is not installed")
     def test_locked(self):
-        with crontab.get_redis_client().lock("dramatiq-scheduler", blocking_timeout=0):
+        pytest.importorskip("redis", reason="redis is not installed")
+        with dramatiq_crontab.utils.lock:
             with io.StringIO() as stderr:
                 call_command("crontab", stderr=stderr)
                 assert "Another scheduler is already running." in stderr.getvalue()

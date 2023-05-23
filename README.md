@@ -38,10 +38,15 @@ Finally, you lauch the scheduler in a separate process:
 python3 manage.py crontab
 ```
 
-### Setup Redis as a lock backend (optional)
+### Setup Redis as a lock backend and persistent schedule (optional)
 
 If you use Redis as a broker, you can use Redis as a lock backend as well.
-The lock backend is used to prevent multiple instances of the scheduler from running at the same time.
+The lock backend is used to prevent multiple instances of the scheduler
+from running at the same time. This is important if you have multiple
+instances of your application running.
+
+You can also use Redis as a persistent schedule backend. This is useful
+if you want to keep the schedule between restarts of the scheduler.
 
 ```python
 # settings.py

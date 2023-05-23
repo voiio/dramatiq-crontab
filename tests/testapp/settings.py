@@ -85,7 +85,12 @@ DATABASES = {
     }
 }
 
-DRAMATIQ_CRONTAB = {"REDIS_URL": os.getenv("REDIS_URL", "redis://localhost:6379/0")}
+try:
+    import redis  # noqa
+except ImportError:
+    pass
+else:
+    DRAMATIQ_CRONTAB = {"REDIS_URL": os.getenv("REDIS_URL", "redis:///0")}
 
 dramatiq.set_broker(StubBroker())
 
