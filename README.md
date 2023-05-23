@@ -41,7 +41,9 @@ python3 manage.py crontab
 ### Setup Redis as a lock backend (optional)
 
 If you use Redis as a broker, you can use Redis as a lock backend as well.
-The lock backend is used to prevent multiple instances of the scheduler from running at the same time.
+The lock backend is used to prevent multiple instances of the scheduler
+from running at the same time. This is important if you have multiple
+instances of your application running.
 
 ```python
 # settings.py
