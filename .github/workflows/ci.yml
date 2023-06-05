@@ -69,7 +69,7 @@ jobs:
           - 6379:6379
         options: --entrypoint redis-server
     env:
-      REDIS_URL: redis://localhost/0
+      REDIS_URL: redis:///0
 
     runs-on: ${{ matrix.os }}
     steps:

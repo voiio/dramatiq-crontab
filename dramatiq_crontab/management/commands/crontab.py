@@ -4,12 +4,7 @@ import signal
 from django.apps import apps
 from django.core.management import BaseCommand
 
-try:
-    import redis
-    from redis.exceptions import LockError
-except ImportError:
-    redis = None
-    LockError = Exception
+from ...utils import LockError, lock
 
 try:
     from sentry_sdk import capture_exception
@@ -17,18 +12,11 @@ except ImportError:
     capture_exception = lambda e: None
 
 from ... import scheduler
-from ...conf import get_settings
 
 
 def kill_softly(signum, frame):
     """Raise a KeyboardInterrupt to stop the scheduler and release the lock."""
     raise KeyboardInterrupt("Received SIGTERM!")
-
-
-def get_redis_client():
-    redis_url = get_settings().REDIS_URL
-    if redis and redis_url:
-        return redis.Redis.from_url(redis_url)
 
 
 class Command(BaseCommand):
@@ -54,17 +42,13 @@ class Command(BaseCommand):
         if not options["no_heartbeat"]:
             importlib.import_module("dramatiq_crontab.tasks")
             self.stdout.write("Scheduling heartbeat.")
-        redis = get_redis_client()
-        if redis:
-            try:
-                # Lock scheduler to prevent multiple instances from running.
-                with redis.lock("dramatiq-scheduler", blocking_timeout=0):
-                    self.launch_scheduler()
-            except LockError as e:
-                capture_exception(e)
-                self.stderr.write("Another scheduler is already running.")
-        else:
-            self.launch_scheduler()
+        try:
+            # Lock scheduler to prevent multiple instances from running.
+            with lock:
+                self.launch_scheduler()
+        except LockError as e:
+            capture_exception(e)
+            self.stderr.write("Another scheduler is already running.")
 
     def launch_scheduler(self):
         signal.signal(signal.SIGTERM, kill_softly)
