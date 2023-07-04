@@ -14,9 +14,7 @@ except ImportError:
 __version__ = _version.version
 VERSION = _version.version_tuple
 
-
 __all__ = ["cron", "scheduler"]
-
 
 scheduler = BlockingScheduler()
 
@@ -41,24 +39,31 @@ def cron(schedule):
     """
 
     def decorator(actor):
-        *_, day_of_week = schedule.split(" ")
+        *_, day_schedule = schedule.split(" ")
 
-        if day_of_week.lower() not in (
-            "*",
-            "mon",
-            "tue",
-            "wed",
-            "thu",
-            "fri",
-            "sat",
-            "sun",
-        ):
-            # CronTrigger uses Python's timezone dependent first weekday,
-            # so in Berlin monday is 0 and sunday is 6. We use literals to avoid
-            # confusion. Literals are also more readable and crontab conform.
-            raise ValueError(
-                "Please use a literal day of week (Mon, Tue, Wed, Thu, Fri, Sat, Sun) or *"
-            )
+        # CronTrigger uses Python's timezone dependent first weekday,
+        # so in Berlin monday is 0 and sunday is 6. We use literals to avoid
+        # confusion. Literals are also more readable and crontab conform.
+        allowed_day_entries = ["*", "mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+        error_msg = (
+            "Please use a literal day of week (Mon, Tue, Wed, Thu, Fri, Sat, Sun) or *"
+        )
+        if "-" in day_schedule:
+            start, end = day_schedule.split("-")
+            if any(
+                [
+                    start.lower() not in allowed_day_entries,
+                    end.lower() not in allowed_day_entries,
+                ]
+            ):
+                raise ValueError(error_msg)
+        elif "," in day_schedule:
+            for day in day_schedule.split(","):
+                if day.lower() not in allowed_day_entries:
+                    raise ValueError(error_msg)
+        else:
+            if day_schedule.lower() not in allowed_day_entries:
+                raise ValueError(error_msg)
 
         if monitor is not None:
             actor.fn = monitor(actor.actor_name)(actor.fn)

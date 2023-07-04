@@ -30,11 +30,35 @@ def test_cron__stars():
 def test_cron__day_of_week():
     assert not scheduler.remove_all_jobs()
     assert tasks.cron("* * * * Mon")(tasks.heartbeat)
-    init = datetime.datetime(2021, 1, 1, 0, 0, 0)
+    init = datetime.datetime(2021, 1, 1, 0, 0, 0)  # Friday
     assert scheduler.get_jobs()[0].trigger.get_next_fire_time(
         init, init
     ) == datetime.datetime(
         2021, 1, 4, 0, 0, tzinfo=zoneinfo.ZoneInfo(key="Europe/Berlin")
+    )
+
+
+@pytest.mark.parametrize(
+    "day_range",
+    [
+        "Tue-Wed",
+        "Tue,Wed",
+    ],
+)
+def test_cron_day_range(day_range):
+    assert not scheduler.remove_all_jobs()
+    assert tasks.cron(f"0 0 * * {day_range}")(tasks.heartbeat)
+    init = datetime.datetime(2021, 1, 1, 0, 0, 0)  # Friday
+    assert scheduler.get_jobs()[0].trigger.get_next_fire_time(
+        init, init
+    ) == datetime.datetime(
+        2021, 1, 5, 0, 0, tzinfo=zoneinfo.ZoneInfo(key="Europe/Berlin")
+    )
+    init = datetime.datetime(2021, 1, 5, 0, 0, 0)  # Tuesday
+    assert scheduler.get_jobs()[0].trigger.get_next_fire_time(
+        init, init
+    ) == datetime.datetime(
+        2021, 1, 6, 0, 0, tzinfo=zoneinfo.ZoneInfo(key="Europe/Berlin")
     )
 
 
