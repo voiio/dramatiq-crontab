@@ -39,15 +39,15 @@ def test_cron__day_of_week():
 
 
 @pytest.mark.parametrize(
-    "day_range",
+    "schedule",
     [
-        "Tue-Wed",
-        "Tue,Wed",
+        "0 0 * * Tue-Wed",
+        "0 0 * * Tue,Wed",
     ],
 )
-def test_cron_day_range(day_range):
+def test_cron_day_range(schedule):
     assert not scheduler.remove_all_jobs()
-    assert tasks.cron(f"0 0 * * {day_range}")(tasks.heartbeat)
+    assert tasks.cron(schedule)(tasks.heartbeat)
     init = datetime.datetime(2021, 1, 1, 0, 0, 0)  # Friday
     assert scheduler.get_jobs()[0].trigger.get_next_fire_time(
         init, init
@@ -73,10 +73,18 @@ def test_cron__every_15_minutes():
     )
 
 
-def test_cron__error():
+@pytest.mark.parametrize(
+    "schedule",
+    [
+        "* * * * 1",
+        "* * * * 2-3",
+        "* * * * 1,7",
+    ],
+)
+def test_cron__error(schedule):
     assert not scheduler.remove_all_jobs()
     with pytest.raises(ValueError) as e:
-        tasks.cron("* * * * 1")(tasks.heartbeat)
+        tasks.cron(schedule)(tasks.heartbeat)
     assert (
         "Please use a literal day of week (Mon, Tue, Wed, Thu, Fri, Sat, Sun) or *"
         in str(e.value)
