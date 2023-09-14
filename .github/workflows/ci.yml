@@ -80,4 +80,4 @@ jobs:
     - run: python -m pip install .[${{ matrix.extras }}]
     - run: python -m pip install django~=${{ matrix.django-version }}.0
     - run: python -m pytest
-    - uses: codecov/codecov-action@v3
+    - uses: codecov/codecov-action@v4
