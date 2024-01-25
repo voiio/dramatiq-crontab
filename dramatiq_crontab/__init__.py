@@ -18,6 +18,13 @@ __all__ = ["cron", "scheduler"]
 
 scheduler = BlockingScheduler()
 
+_jobs = []
+
+
+def _schedule_jobs():
+    for args, kwargs in _jobs:
+        scheduler.add_job(*args, **kwargs)
+
 
 def cron(schedule):
     """
@@ -52,13 +59,19 @@ def cron(schedule):
         if monitor is not None:
             actor.fn = monitor(actor.actor_name)(actor.fn)
 
-        scheduler.add_job(
-            actor.send,
-            CronTrigger.from_crontab(
-                schedule,
-                timezone=timezone.get_default_timezone(),
-            ),
-            name=actor.actor_name,
+        _jobs.append(
+            (
+                (
+                    actor.send,
+                    CronTrigger.from_crontab(
+                        schedule,
+                        timezone=timezone.get_default_timezone(),
+                    ),
+                ),
+                {
+                    "name": actor.actor_name,
+                },
+            )
         )
         # We don't add the Sentry monitor on the actor itself, because we only want to
         # monitor the cron job, not the actor itself, or it's direct invocations.
