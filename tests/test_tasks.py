@@ -7,7 +7,7 @@ except ImportError:
 
 import pytest
 
-from dramatiq_crontab import scheduler, tasks
+from dramatiq_crontab import _schedule_jobs, scheduler, tasks
 
 
 def test_heartbeat(caplog):
@@ -20,6 +20,7 @@ def test_cron__stars():
     assert not scheduler.remove_all_jobs()
     assert tasks.cron("* * * * *")(tasks.heartbeat)
     init = datetime.datetime(2021, 1, 1, 0, 0, 0)
+    _schedule_jobs()
     assert scheduler.get_jobs()[0].trigger.get_next_fire_time(
         init, init
     ) == datetime.datetime(
@@ -31,6 +32,7 @@ def test_cron__day_of_week():
     assert not scheduler.remove_all_jobs()
     assert tasks.cron("* * * * Mon")(tasks.heartbeat)
     init = datetime.datetime(2021, 1, 1, 0, 0, 0)  # Friday
+    _schedule_jobs()
     assert scheduler.get_jobs()[0].trigger.get_next_fire_time(
         init, init
     ) == datetime.datetime(
@@ -49,6 +51,7 @@ def test_cron_day_range(schedule):
     assert not scheduler.remove_all_jobs()
     assert tasks.cron(schedule)(tasks.heartbeat)
     init = datetime.datetime(2021, 1, 1, 0, 0, 0)  # Friday
+    _schedule_jobs()
     assert scheduler.get_jobs()[0].trigger.get_next_fire_time(
         init, init
     ) == datetime.datetime(
@@ -66,6 +69,7 @@ def test_cron__every_15_minutes():
     assert not scheduler.remove_all_jobs()
     assert tasks.cron("*/15 * * * *")(tasks.heartbeat)
     init = datetime.datetime(2021, 1, 1, 0, 0, 0)
+    _schedule_jobs()
     assert scheduler.get_jobs()[0].trigger.get_next_fire_time(
         init, init
     ) == datetime.datetime(
