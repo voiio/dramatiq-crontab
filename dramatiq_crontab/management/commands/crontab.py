@@ -11,7 +11,7 @@ try:
 except ImportError:
     capture_exception = lambda e: None
 
-from ... import _schedule_jobs, scheduler
+from ... import scheduler
 
 
 def kill_softly(signum, frame):
@@ -67,7 +67,6 @@ class Command(BaseCommand):
         If they are not imported, they will not have registered
         their tasks with the scheduler.
         """
-        _schedule_jobs()
         for app in apps.get_app_configs():
             if app.name == "dramatiq_crontab":
                 continue
