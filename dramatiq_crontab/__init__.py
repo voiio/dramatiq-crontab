@@ -1,5 +1,7 @@
 """Cron style scheduler for asynchronous Dramatiq tasks in Django."""
+from unittest.mock import Mock
 
+from apscheduler.schedulers.base import STATE_STOPPED
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
 from django.utils import timezone
@@ -16,14 +18,20 @@ VERSION = _version.version_tuple
 
 __all__ = ["cron", "scheduler"]
 
-scheduler = BlockingScheduler()
 
-_jobs = []
+class LazyBlockingScheduler(BlockingScheduler):
+    """Avoid annoying info logs for pending jobs."""
+
+    def add_job(self, *args, **kwargs):
+        logger = self._logger
+        if self.state == STATE_STOPPED:
+            # We don't want to schedule jobs before the scheduler is started.
+            self._logger = Mock()
+        super().add_job(*args, **kwargs)
+        self._logger = logger
 
 
-def _schedule_jobs():
-    for args, kwargs in _jobs:
-        scheduler.add_job(*args, **kwargs)
+scheduler = LazyBlockingScheduler()
 
 
 def cron(schedule):
@@ -59,19 +67,13 @@ def cron(schedule):
         if monitor is not None:
             actor.fn = monitor(actor.actor_name)(actor.fn)
 
-        _jobs.append(
-            (
-                (
-                    actor.send,
-                    CronTrigger.from_crontab(
-                        schedule,
-                        timezone=timezone.get_default_timezone(),
-                    ),
-                ),
-                {
-                    "name": actor.actor_name,
-                },
-            )
+        scheduler.add_job(
+            actor.send,
+            CronTrigger.from_crontab(
+                schedule,
+                timezone=timezone.get_default_timezone(),
+            ),
+            name=actor.actor_name,
         )
         # We don't add the Sentry monitor on the actor itself, because we only want to
         # monitor the cron job, not the actor itself, or it's direct invocations.
