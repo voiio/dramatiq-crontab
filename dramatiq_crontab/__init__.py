@@ -1,4 +1,5 @@
 """Cron style scheduler for asynchronous Dramatiq tasks in Django."""
+
 from unittest.mock import Mock
 
 from apscheduler.schedulers.base import STATE_STOPPED
