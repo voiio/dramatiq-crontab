@@ -9,6 +9,9 @@ def get_settings():
         (),
         {
             "REDIS_URL": None,
+            "LOCK_REFRESH_INTERVAL": 5,
+            "LOCK_TIMEOUT": 10,
+            "LOCK_BLOCKING_TIMEOUT": 15,
             **getattr(settings, "DRAMATIQ_CRONTAB", {}),
         },
     )

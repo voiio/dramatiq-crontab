@@ -1,10 +1,11 @@
 import importlib
 import signal
 
+from apscheduler.triggers.interval import IntervalTrigger
 from django.apps import apps
 from django.core.management import BaseCommand
 
-from ...utils import LockError, lock
+from ... import conf, utils
 
 try:
     from sentry_sdk import capture_exception
@@ -43,16 +44,24 @@ class Command(BaseCommand):
             importlib.import_module("dramatiq_crontab.tasks")
             self.stdout.write("Scheduling heartbeat.")
         try:
+            if not isinstance(utils.lock, utils.FakeLock):
+                self.stdout.write("Acquiring lock…")
             # Lock scheduler to prevent multiple instances from running.
-            with lock:
+            with utils.lock:
                 self.launch_scheduler()
-        except LockError as e:
+        except utils.LockError as e:
             capture_exception(e)
             self.stderr.write("Another scheduler is already running.")
 
     def launch_scheduler(self):
         signal.signal(signal.SIGTERM, kill_softly)
         self.stdout.write(self.style.SUCCESS("Starting scheduler…"))
+        scheduler.add_job(
+            utils.lock.extend,
+            IntervalTrigger(seconds=conf.get_settings().LOCK_REFRESH_INTERVAL),
+            args=(conf.get_settings().LOCK_TIMEOUT, True),
+            name="dramatiq_crontab.utils.lock.extend",
+        )
         try:
             scheduler.start()
         except KeyboardInterrupt as e:
