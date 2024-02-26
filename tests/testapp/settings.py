@@ -86,12 +86,18 @@ DATABASES = {
     }
 }
 
+DRAMATIQ_CRONTAB = {
+    "LOCK_REFRESH_INTERVAL": 1,
+    "LOCK_TIMEOUT": 2,
+    "LOCK_BLOCKING_TIMEOUT": 3,
+}
+
 try:
     import redis  # noqa
 except ImportError:
     pass
 else:
-    DRAMATIQ_CRONTAB = {"REDIS_URL": os.getenv("REDIS_URL", "redis:///0")}
+    DRAMATIQ_CRONTAB["REDIS_URL"] = os.getenv("REDIS_URL", "redis:///0")
 
 dramatiq.set_broker(StubBroker())
 
