@@ -56,6 +56,8 @@ class Command(BaseCommand):
     def launch_scheduler(self):
         signal.signal(signal.SIGTERM, kill_softly)
         self.stdout.write(self.style.SUCCESS("Starting scheduler…"))
+        # Periodically extend TTL of lock if needed
+        # https://redis-py.readthedocs.io/en/stable/lock.html#redis.lock.Lock.extend
         scheduler.add_job(
             utils.lock.extend,
             IntervalTrigger(seconds=conf.get_settings().LOCK_REFRESH_INTERVAL),
