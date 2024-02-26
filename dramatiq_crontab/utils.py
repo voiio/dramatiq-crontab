@@ -23,6 +23,7 @@ if redis_url := get_settings().REDIS_URL:
         "dramatiq-scheduler",
         blocking_timeout=get_settings().LOCK_BLOCKING_TIMEOUT,
         timeout=get_settings().LOCK_TIMEOUT,
+        thread_local=False,
     )
 else:
 
