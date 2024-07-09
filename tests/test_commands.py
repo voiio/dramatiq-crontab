@@ -64,7 +64,7 @@ class TestCrontab:
         with io.StringIO() as stdout:
             call_command("crontab", stdout=stdout)
             assert "Starting scheduler…" in stdout.getvalue()
-        assert scheduler.start.called_once()
+        scheduler.start.assert_called_once()
 
     def test_handle__keyboard_interrupt(self, monkeypatch):
         scheduler = Mock()
@@ -73,5 +73,5 @@ class TestCrontab:
         with io.StringIO() as stdout:
             call_command("crontab", stdout=stdout)
             assert "Shutting down scheduler…" in stdout.getvalue()
-        assert scheduler.start.called_once()
-        assert scheduler.shutdown.called_once()
+        scheduler.shutdown.assert_called_once()
+        scheduler.start.assert_called_once()
