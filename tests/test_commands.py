@@ -3,7 +3,6 @@ from unittest.mock import Mock
 
 import pytest
 from django.core.management import call_command
-
 from dramatiq_crontab import utils
 from dramatiq_crontab.management.commands import crontab
 

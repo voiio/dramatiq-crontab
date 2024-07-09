@@ -31,10 +31,10 @@ classifiers = [
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "Framework :: Django",
-  "Framework :: Django :: 3.2",
-  "Framework :: Django :: 4.1",
   "Framework :: Django :: 4.2",
+  "Framework :: Django :: 5.0",
 ]
 requires-python = ">=3.8"
 dependencies = ["dramatiq", "apscheduler", "django"]
@@ -49,6 +49,11 @@ test = [
 ]
 sentry = ["sentry-sdk"]
 redis = ["redis"]
+
+lint = [
+  "black==24.4.2",
+  "ruff==0.5.1",
+]
 
 [project.urls]
 Project-URL = "https://github.com/voiio/dramatiq-crontab"
@@ -72,20 +77,29 @@ source = ["dramatiq_crontab"]
 [tool.coverage.report]
 show_missing = true
 
-[tool.isort]
-atomic = true
-line_length = 88
-known_first_party = "dramatiq_crontab, tests"
-include_trailing_comma = true
-default_section = "THIRDPARTY"
-combine_as_imports = true
-multi_line_output = 3
+[tool.ruff]
+src = ["dramatiq_crontab", "tests"]
 
-[tool.pydocstyle]
-add_ignore = "D1"
+[tool.ruff.lint]
+select = [
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    "F", # pyflakes
+    "I", # isort
+    "S", # flake8-bandit
+    "D", # pydocstyle
+    "UP", # pyupgrade
+    "B", # flake8-bugbear
+    "C", # flake8-comprehensions
+]
 
-[tool.djlint]
-profile="django"
-indent=2
-max_line_length=120
-exclude=".direnv,.venv,venv"
+ignore = ["B904", "D1", "E501", "S101"]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+split-on-trailing-comma = true
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+force-wrap-aliases = true
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"

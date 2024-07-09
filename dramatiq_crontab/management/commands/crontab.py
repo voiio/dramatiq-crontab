@@ -10,7 +10,7 @@ from ... import conf, utils
 try:
     from sentry_sdk import capture_exception
 except ImportError:
-    capture_exception = lambda e: None
+    capture_exception = lambda e: None  # noqa: E731
 
 from ... import scheduler
 
