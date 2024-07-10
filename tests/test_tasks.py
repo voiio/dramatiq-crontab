@@ -6,7 +6,6 @@ except ImportError:
     from backports import zoneinfo
 
 import pytest
-
 from dramatiq_crontab import scheduler, tasks
 
 
