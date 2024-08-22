@@ -52,7 +52,7 @@ redis = ["redis"]
 
 lint = [
   "black==24.8.0",
-  "ruff==0.6.1",
+  "ruff==0.6.2",
 ]
 
 [project.urls]
