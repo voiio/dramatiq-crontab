@@ -82,6 +82,7 @@ src = ["dramatiq_crontab", "tests"]
 
 [tool.ruff.lint]
 select = [
+    "Q", # quotes style
     "E", # pycodestyle errors
     "W", # pycodestyle warnings
     "F", # pyflakes
