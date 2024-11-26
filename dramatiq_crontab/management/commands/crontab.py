@@ -78,14 +78,16 @@ class Command(BaseCommand):
         If they are not imported, they will not have registered
         their tasks with the scheduler.
         """
+        crontab_module = conf.get_settings().CRONTAB_MODULE
         for app in apps.get_app_configs():
             if app.name == "dramatiq_crontab":
                 continue
             if app.ready:
                 try:
-                    importlib.import_module(f"{app.name}.tasks")
+                    app_crontab_module = f"{app.name}.{crontab_module}"
+                    importlib.import_module(app_crontab_module)
                     self.stdout.write(
-                        f"Loaded tasks from {self.style.NOTICE(app.name)}."
+                        f"Loaded tasks from {self.style.NOTICE(app_crontab_module)}."
                     )
                 except ImportError:
                     pass

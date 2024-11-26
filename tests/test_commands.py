@@ -20,22 +20,25 @@ class TestCrontab:
             lambda s: None,
         )
 
-    def test_default(self, patch_launch):
+    @pytest.mark.parametrize("crontab_module", (None, "crons"))
+    def test_default(self, settings, patch_launch, crontab_module):
+        if crontab_module is not None:
+            settings.DRAMATIQ_CRONTAB |= { "CRONTAB_MODULE": crontab_module }
         with io.StringIO() as stdout:
             call_command("crontab", stdout=stdout)
-            assert "Loaded tasks from tests.testapp." in stdout.getvalue()
+            assert f"Loaded tasks from tests.testapp.{crontab_module or 'tasks'}." in stdout.getvalue()
             assert "Scheduling heartbeat." in stdout.getvalue()
 
     def test_no_task_loading(self, patch_launch):
         with io.StringIO() as stdout:
             call_command("crontab", "--no-task-loading", stdout=stdout)
-            assert "Loaded tasks from tests.testapp." not in stdout.getvalue()
+            assert "Loaded tasks from tests.testapp.tasks." not in stdout.getvalue()
             assert "Scheduling heartbeat." in stdout.getvalue()
 
     def test_no_heartbeat(self, patch_launch):
         with io.StringIO() as stdout:
             call_command("crontab", "--no-heartbeat", stdout=stdout)
-            assert "Loaded tasks from tests.testapp." in stdout.getvalue()
+            assert "Loaded tasks from tests.testapp.tasks." in stdout.getvalue()
             assert "Scheduling heartbeat." not in stdout.getvalue()
 
     def test_locked(self):

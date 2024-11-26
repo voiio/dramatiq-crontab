@@ -8,6 +8,7 @@ def get_settings():
         "Settings",
         (),
         {
+            "CRONTAB_MODULE": "tasks",
             "REDIS_URL": None,
             "LOCK_REFRESH_INTERVAL": 5,
             "LOCK_TIMEOUT": 10,
