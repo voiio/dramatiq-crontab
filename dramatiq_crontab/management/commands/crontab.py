@@ -17,7 +17,8 @@ from ... import scheduler
 
 def kill_softly(signum, frame):
     """Raise a KeyboardInterrupt to stop the scheduler and release the lock."""
-    raise KeyboardInterrupt("Received SIGTERM!")
+    signame = signal.Signals(signum).name
+    raise KeyboardInterrupt(f"Received {signame} ({signum}), shutting down…")
 
 
 class Command(BaseCommand):
@@ -54,7 +55,9 @@ class Command(BaseCommand):
             self.stderr.write("Another scheduler is already running.")
 
     def launch_scheduler(self):
+        signal.signal(signal.SIGHUP, kill_softly)
         signal.signal(signal.SIGTERM, kill_softly)
+        signal.signal(signal.SIGINT, kill_softly)
         self.stdout.write(self.style.SUCCESS("Starting scheduler…"))
         # Periodically extend TTL of lock if needed
         # https://redis-py.readthedocs.io/en/stable/lock.html#redis.lock.Lock.extend

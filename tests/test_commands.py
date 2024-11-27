@@ -8,8 +8,9 @@ from dramatiq_crontab.management.commands import crontab
 
 
 def test_kill_softly():
-    with pytest.raises(KeyboardInterrupt):
-        crontab.kill_softly(None, None)
+    with pytest.raises(KeyboardInterrupt) as e:
+        crontab.kill_softly(15, None)
+    assert "Received SIGTERM (15), shutting down…" in str(e.value)
 
 
 class TestCrontab:
