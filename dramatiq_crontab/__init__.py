@@ -5,6 +5,7 @@ from unittest.mock import Mock
 from apscheduler.schedulers.base import STATE_STOPPED
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.interval import IntervalTrigger
 from django.utils import timezone
 
 from . import _version
@@ -17,7 +18,7 @@ except ImportError:
 __version__ = _version.version
 VERSION = _version.version_tuple
 
-__all__ = ["cron", "scheduler"]
+__all__ = ["cron", "interval", "scheduler"]
 
 
 class LazyBlockingScheduler(BlockingScheduler):
@@ -78,6 +79,41 @@ def cron(schedule):
         )
         # We don't add the Sentry monitor on the actor itself, because we only want to
         # monitor the cron job, not the actor itself, or it's direct invocations.
+        return actor
+
+    return decorator
+
+
+def interval(*, seconds):
+    """
+    Run task on a periodic interval.
+
+    Usage:
+        @interval(seconds=30)
+        @dramatiq.actor
+        def interval_test():
+            print("Interval test")
+
+    Please note that the interval is relative to the time the scheduler is started. For
+    example, if you start the scheduler at 12:00:00, the first run will be at 12:00:30.
+    However, if you restart the scheduler at 12:00:15, the first run will be at
+    12:00:45.
+
+    For an interval that is consistent with the clock, use the `cron` decorator instead.
+    """
+
+    def decorator(actor):
+        if monitor is not None:
+            actor.fn = monitor(actor.actor_name)(actor.fn)
+
+        scheduler.add_job(
+            actor.send,
+            IntervalTrigger(
+                seconds=seconds,
+                timezone=timezone.get_default_timezone(),
+            ),
+            name=actor.actor_name,
+        )
         return actor
 
     return decorator
