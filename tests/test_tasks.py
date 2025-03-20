@@ -6,7 +6,7 @@ except ImportError:
     from backports import zoneinfo
 
 import pytest
-from dramatiq_crontab import scheduler, tasks
+from dramatiq_crontab import scheduler, tasks, interval
 
 
 def test_heartbeat(caplog):
@@ -87,4 +87,15 @@ def test_cron__error(schedule):
     assert (
         "Please use a literal day of week (Mon, Tue, Wed, Thu, Fri, Sat, Sun) or *"
         in str(e.value)
+    )
+
+
+def test_interval__seconds():
+    assert not scheduler.remove_all_jobs()
+    assert interval(seconds=30)(tasks.heartbeat)
+    init = datetime.datetime(2021, 1, 1, 0, 0, 0)
+    assert scheduler.get_jobs()[0].trigger.get_next_fire_time(
+        init, init
+    ) == datetime.datetime(
+        2021, 1, 1, 0, 0, 30, tzinfo=zoneinfo.ZoneInfo(key="Europe/Berlin")
     )

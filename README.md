@@ -66,11 +66,32 @@ def my_task():
     my_task.logger.info("Hello World")
 ```
 
+### Interval
+
+If you want to run a task more frequently than once a minute, you can use the
+`interval` decorator.
+
+```python
+# tasks.py
+import dramatiq
+from dramatiq_crontab import interval
+
+
+@interval(seconds=30)
+@dramatiq.actor
+def my_task():
+    my_task.logger.info("Hello World")
+```
+
+Please note that the interval is relative to the time the scheduler is started.
+For example, if you start the scheduler at 12:00:00, the first run will be at
+12:00:30. However, if you restart the scheduler at 12:00:15, the first run will
+be at 12:00:45.
+
 ### Sentry Cron Monitors
 
 If you use [Sentry][sentry] you can add cron monitors to your tasks.
 The monitor's slug will be the actor's name. Like `my_task` in the example above.
-
 
 ### The crontab command
 
