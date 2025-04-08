@@ -6,7 +6,7 @@ except ImportError:
     from backports import zoneinfo
 
 import pytest
-from dramatiq_crontab import scheduler, tasks, interval
+from dramatiq_crontab import interval, scheduler, tasks
 
 
 def test_heartbeat(caplog):
