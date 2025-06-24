@@ -12,6 +12,7 @@ def get_settings():
             "LOCK_REFRESH_INTERVAL": 5,
             "LOCK_TIMEOUT": 10,
             "LOCK_BLOCKING_TIMEOUT": 15,
+            "LOCK_AUTORETRY": False,
             **getattr(settings, "DRAMATIQ_CRONTAB", {}),
         },
     )

@@ -43,14 +43,15 @@ class TestCrontab:
         """A lock was already acquired by another process."""
         pytest.importorskip("redis", reason="redis is not installed")
         with utils.redis_client.lock("dramatiq-scheduler", blocking_timeout=0):
-            with io.StringIO() as stderr:
-                call_command("crontab", stderr=stderr)
-                assert "Another scheduler is already running." in stderr.getvalue()
+            with pytest.raises(utils.LockError):
+                call_command("crontab")
 
     def test_locked_no_refresh(self, monkeypatch):
         """A lock was acquired, but it was not refreshed."""
         pytest.importorskip("redis", reason="redis is not installed")
         scheduler = Mock()
+        monkeypatch.setattr(crontab.settings, "LOCK_AUTORETRY", True, raising=False)
+        monkeypatch.setattr(crontab.time, "sleep", lambda _: None)
         monkeypatch.setattr(crontab, "scheduler", scheduler)
         utils.redis_client.lock(
             "dramatiq-scheduler", blocking_timeout=0, timeout=1
@@ -76,3 +77,55 @@ class TestCrontab:
             assert "Shutting down scheduler…" in stdout.getvalue()
         scheduler.shutdown.assert_called_once()
         scheduler.start.assert_called_once()
+
+    def test_locked_autoretry(self, monkeypatch):
+        """Scheduler keeps retrying to get the lock when autoretry = True."""
+        pytest.importorskip("redis", reason="redis is not installed")
+        lock = utils.redis_client.lock("dramatiq-scheduler", blocking_timeout=0)
+        lock.acquire()  # ensure first attempt fails
+        monkeypatch.setattr(crontab.settings, "LOCK_AUTORETRY", True, raising=False)
+        monkeypatch.setattr(
+            crontab.time, "sleep", lambda _: (_ for _ in ()).throw(KeyboardInterrupt())
+        )
+        monkeypatch.setattr(crontab, "scheduler", Mock())  # prevent real start
+        with pytest.raises(KeyboardInterrupt):
+            call_command("crontab")
+        lock.release()
+
+    def test_extend_lock_error_retry(self, monkeypatch):
+        """When `extend` fails, the command retries while LOCK_AUTORETRY=True."""
+        # enable autoretry and short-circuit the sleep-call so the loop exits
+        monkeypatch.setattr(crontab.settings, "LOCK_AUTORETRY", True, raising=False)
+        monkeypatch.setattr(
+            crontab.time,
+            "sleep",
+            lambda _: (_ for _ in ()).throw(KeyboardInterrupt()),
+        )
+
+        # lock whose `extend` always fails
+        class DummyLock(utils.FakeLock):
+            def extend(self, *_, **__):
+                raise utils.LockError("lost lock")
+
+        monkeypatch.setattr(utils, "lock", DummyLock())
+
+        # scheduler that immediately runs the extension job once
+        class DummyScheduler:
+            def __init__(self):
+                self._jobs = []
+
+            def add_job(self, func, *args, **kwargs):  # noqa: D401
+                self._jobs.append(func)
+
+            def start(self):
+                for job in self._jobs:
+                    job()  # triggers DummyLock.extend → LockError
+
+            def shutdown(self, wait=True):
+                pass
+
+        monkeypatch.setattr(crontab, "scheduler", DummyScheduler())
+
+        # command should retry (→ sleep) and the patched sleep raises KeyboardInterrupt
+        with pytest.raises(KeyboardInterrupt):
+            call_command("crontab")
