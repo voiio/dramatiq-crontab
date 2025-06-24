@@ -8,14 +8,14 @@ from django.core.management import BaseCommand
 
 from ... import conf, utils
 
-settings = conf.get_settings()
-
 try:
     from sentry_sdk import capture_exception
 except ImportError:
     capture_exception = lambda e: None  # noqa: E731
 
 from ... import scheduler
+
+settings = conf.get_settings()
 
 
 def kill_softly(signum, frame):
