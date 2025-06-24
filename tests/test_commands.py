@@ -129,3 +129,23 @@ class TestCrontab:
         # command should retry (→ sleep) and the patched sleep raises KeyboardInterrupt
         with pytest.raises(KeyboardInterrupt):
             call_command("crontab")
+
+
+def test_locked_no_autoretry(monkeypatch):
+    """Lock acquisition fails while LOCK_AUTORETRY=False → LockError must bubble up."""
+
+    # lock that always fails to acquire
+    class DummyLock(utils.FakeLock):
+        def __enter__(self):
+            raise utils.LockError("already locked")  # triggers the except-branch
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            return False  # propagate exception
+
+    # make the command use the dummy lock and disable autoretry
+    monkeypatch.setattr(utils, "lock", DummyLock())
+    monkeypatch.setattr(crontab.settings, "LOCK_AUTORETRY", False, raising=False)
+
+    # the command must raise the LockError immediately
+    with pytest.raises(utils.LockError):
+        call_command("crontab")
