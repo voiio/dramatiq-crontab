@@ -16,7 +16,7 @@ class FakeLock:
 
 if redis_url := get_settings().REDIS_URL:
     import redis
-    from redis.exceptions import LockError  # noqa
+    from redis.exceptions import LockError, LockNotOwnedError  # noqa
 
     redis_client = redis.Redis.from_url(redis_url)
     lock = redis_client.lock(
@@ -30,4 +30,16 @@ else:
     class LockError(Exception):
         pass
 
+    class LockNotOwnedError(LockError):
+        pass
+
     lock = FakeLock()
+
+
+def extend_lock(lock, scheduler):
+    """Extend the lock for a scheduler or shut it down."""
+    try:
+        lock.extend(get_settings().LOCK_TIMEOUT, True)
+    except LockError:
+        scheduler.shutdown()
+        raise
