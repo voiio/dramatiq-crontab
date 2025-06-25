@@ -18,7 +18,7 @@ class TestCrontab:
     def patch_launch(self, monkeypatch):
         monkeypatch.setattr(
             "dramatiq_crontab.management.commands.crontab.Command.launch_scheduler",
-            lambda s: None,
+            lambda *args, **kwargs: None,
         )
 
     def test_default(self, patch_launch):
