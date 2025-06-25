@@ -48,13 +48,18 @@ class Command(BaseCommand):
             if not isinstance(utils.lock, utils.FakeLock):
                 self.stdout.write("Acquiring lock…")
             # Lock scheduler to prevent multiple instances from running.
-            with utils.lock:
-                self.launch_scheduler()
+            with utils.lock as lock:
+                self.launch_scheduler(lock, scheduler)
+        except utils.LockNotOwnedError as e:
+            capture_exception(e)
+            self.stderr.write(
+                "The lock is no longer owned by the scheduler. Shutting down."
+            )
         except utils.LockError as e:
             capture_exception(e)
             self.stderr.write("Another scheduler is already running.")
 
-    def launch_scheduler(self):
+    def launch_scheduler(self, lock, scheduler):
         signal.signal(signal.SIGHUP, kill_softly)
         signal.signal(signal.SIGTERM, kill_softly)
         signal.signal(signal.SIGINT, kill_softly)
@@ -62,9 +67,9 @@ class Command(BaseCommand):
         # Periodically extend TTL of lock if needed
         # https://redis-py.readthedocs.io/en/stable/lock.html#redis.lock.Lock.extend
         scheduler.add_job(
-            utils.lock.extend,
+            utils.extend_lock,
             IntervalTrigger(seconds=conf.get_settings().LOCK_REFRESH_INTERVAL),
-            args=(conf.get_settings().LOCK_TIMEOUT, True),
+            args=(lock, scheduler),
             name="dramatiq_crontab.utils.lock.extend",
         )
         try:
