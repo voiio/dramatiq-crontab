@@ -11,7 +11,7 @@ class FakeLock:
         pass
 
     def extend(self, additional_time=None, replace_ttl=False):
-        pass
+        return True
 
 
 if redis_url := get_settings().REDIS_URL:
