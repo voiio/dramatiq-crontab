@@ -20,3 +20,17 @@ def test_extend_lock__error():
         utils.extend_lock(lock, scheduler)
     assert lock.extend.call_count == 1
     assert scheduler.shutdown.call_count == 1
+
+
+class TestFakeLock:
+    def test_enter(self):
+        fake_lock = utils.FakeLock()
+        assert fake_lock.__enter__() is fake_lock
+
+    def test_exit(self):
+        fake_lock = utils.FakeLock()
+        assert fake_lock.__exit__(None, None, None) is None
+
+    def test_extend(self):
+        fake_lock = utils.FakeLock()
+        assert fake_lock.extend(additional_time=10, replace_ttl=True)

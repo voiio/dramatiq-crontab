@@ -5,13 +5,13 @@ __all__ = ["LockError", "lock"]
 
 class FakeLock:
     def __enter__(self):
-        pass
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
     def extend(self, additional_time=None, replace_ttl=False):
-        pass
+        return True
 
 
 if redis_url := get_settings().REDIS_URL:
