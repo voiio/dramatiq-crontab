@@ -52,7 +52,7 @@ sentry = ["sentry-sdk"]
 redis = ["redis"]
 
 lint = [
-  "black==25.1.0",
+  "black==25.9.0",
   "ruff==0.13.1",
 ]
 
