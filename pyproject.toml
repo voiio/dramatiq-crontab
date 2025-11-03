@@ -51,11 +51,6 @@ test = [
 sentry = ["sentry-sdk"]
 redis = ["redis"]
 
-lint = [
-  "black==25.9.0",
-  "ruff==0.14.3",
-]
-
 [project.urls]
 Project-URL = "https://github.com/voiio/dramatiq-crontab"
 Changelog = "https://github.com/voiio/dramatiq-crontab/releases"
