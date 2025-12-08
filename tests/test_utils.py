@@ -1,7 +1,7 @@
 from unittest.mock import Mock
 
 import pytest
-from dramatiq_crontab import utils
+from crontask import utils
 
 
 def test_extend_lock():

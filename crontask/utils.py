@@ -1,4 +1,4 @@
-from dramatiq_crontab.conf import get_settings
+from crontask.conf import get_settings
 
 __all__ = ["LockError", "lock"]
 
@@ -20,7 +20,7 @@ if redis_url := get_settings().REDIS_URL:
 
     redis_client = redis.Redis.from_url(redis_url)
     lock = redis_client.lock(
-        "dramatiq-scheduler",
+        "crontask-lock",
         blocking_timeout=get_settings().LOCK_BLOCKING_TIMEOUT,
         timeout=get_settings().LOCK_TIMEOUT,
         thread_local=False,

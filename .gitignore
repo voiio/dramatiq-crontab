@@ -131,4 +131,4 @@ dmypy.json
 
 # Packaging
 
-dramatiq_crontab/_version.py
+crontask/_version.py

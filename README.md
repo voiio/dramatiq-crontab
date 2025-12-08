@@ -1,33 +1,39 @@
-# Dramatiq Crontab
+# Django CronTask
 
-![dramtiq-crontab logo: person in front of a schedule](https://raw.githubusercontent.com/voiio/dramatiq-crontab/main/dramatiq-crontab.png)
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./images/logo-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="./images/logo-light.svg">
+    <img alt="esimport: Blazing fast ESM compiler and importmap generator" src="./images/logo-light.svg">
+  </picture>
+</p>
 
-**Cron style scheduler for asynchronous Dramatiq tasks in Django.**
+**Cron style scheduler for asynchronous tasks in Django.**
 
 - setup recurring tasks via crontab syntax
-- lightweight helpers build on robust tools like [Dramatiq] and [APScheduler]
+- lightweight helpers build [APScheduler]
 - [Sentry] cron monitor support
 
-[![PyPi Version](https://img.shields.io/pypi/v/dramatiq-crontab.svg)](https://pypi.python.org/pypi/dramatiq-crontab/)
-[![Test Coverage](https://codecov.io/gh/voiio/dramatiq-crontab/branch/main/graph/badge.svg)](https://codecov.io/gh/voiio/dramatiq-crontab)
-[![GitHub License](https://img.shields.io/github/license/voiio/dramatiq-crontab)](https://raw.githubusercontent.com/voiio/dramatiq-crontab/master/LICENSE)
+[![PyPi Version](https://img.shields.io/pypi/v/django-crontask.svg)](https://pypi.python.org/pypi/django-crontask/)
+[![Test Coverage](https://codecov.io/gh/codingjoe/django-crontask/branch/main/graph/badge.svg)](https://codecov.io/gh/codingjoe/django-crontask)
+[![GitHub License](https://img.shields.io/github/license/codingjoe/django-crontask)](https://raw.githubusercontent.com/codingjoe/django-crontask/master/LICENSE)
 
 ## Setup
 
-You need to have [Dramatiq] installed and setup properly.
+You need to have [Django's Task framework][django-tasks] setup properly.
 
 ```ShellSession
-python3 -m pip install dramatiq-crontab
+python3 -m pip install django-crontask
 # or
-python3 -m pip install dramatiq-crontab[sentry]  # with sentry cron monitor support
+python3 -m pip install django-crontask[sentry]  # with sentry cron monitor support
 ```
 
-Add `dramatiq_crontab` to your `INSTALLED_APPS` in `settings.py`:
+Add `crontask` to your `INSTALLED_APPS` in `settings.py`:
 
 ```python
 # settings.py
 INSTALLED_APPS = [
-    "dramatiq_crontab",
+    "crontask",
     # ...
 ]
 ```
@@ -35,7 +41,7 @@ INSTALLED_APPS = [
 Finally, you lauch the scheduler in a separate process:
 
 ```ShellSession
-python3 manage.py crontab
+python3 manage.py crontask
 ```
 
 ### Setup Redis as a lock backend (optional)
@@ -47,7 +53,7 @@ instances of your application running.
 
 ```python
 # settings.py
-DRAMATIQ_CRONTAB = {
+CRONTASK = {
     "REDIS_URL": "redis://localhost:6379/0",
 }
 ```
@@ -56,12 +62,12 @@ DRAMATIQ_CRONTAB = {
 
 ```python
 # tasks.py
-import dramatiq
-from dramatiq_crontab import cron
+from django.tasks import task
+from crontask import cron
 
 
 @cron("*/5 * * * *")  # every 5 minutes
-@dramatiq.actor
+@task
 def my_task():
     my_task.logger.info("Hello World")
 ```
@@ -73,12 +79,12 @@ If you want to run a task more frequently than once a minute, you can use the
 
 ```python
 # tasks.py
-import dramatiq
-from dramatiq_crontab import interval
+from django.tasks import task
+from crontask import interval
 
 
 @interval(seconds=30)
-@dramatiq.actor
+@task
 def my_task():
     my_task.logger.info("Hello World")
 ```
@@ -101,7 +107,7 @@ usage: manage.py crontab [-h] [--no-task-loading] [--no-heartbeat] [--version] [
                          [--settings SETTINGS] [--pythonpath PYTHONPATH] [--traceback] [--no-color]
                          [--force-color] [--skip-checks]
 
-Run dramatiq task scheduler for all tasks with the `cron` decorator.
+Run task scheduler for all tasks with the `cron` decorator.
 
 options:
   -h, --help            show this help message and exit
@@ -110,5 +116,5 @@ options:
 ```
 
 [apscheduler]: https://apscheduler.readthedocs.io/en/stable/
-[dramatiq]: https://dramatiq.io/
+[django-tasks]: https://docs.djangoproject.com/en/6.0/topics/tasks/
 [sentry]: https://docs.sentry.io/product/crons/

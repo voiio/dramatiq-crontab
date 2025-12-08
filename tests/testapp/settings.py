@@ -13,9 +13,6 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 
-import dramatiq
-from dramatiq.brokers.stub import StubBroker
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -41,7 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "dramatiq_crontab",
+    "crontask",
     "tests.testapp",
 ]
 
@@ -86,7 +83,10 @@ DATABASES = {
     }
 }
 
-DRAMATIQ_CRONTAB = {
+TASKS = {"default": {"BACKEND": "django.tasks.backends.immediate.ImmediateBackend"}}
+
+
+CRONTASK = {
     "LOCK_REFRESH_INTERVAL": 1,
     "LOCK_TIMEOUT": 2,
     "LOCK_BLOCKING_TIMEOUT": 3,
@@ -97,10 +97,7 @@ try:
 except ImportError:
     pass
 else:
-    DRAMATIQ_CRONTAB["REDIS_URL"] = os.getenv("REDIS_URL", "redis:///0")
-
-dramatiq.set_broker(StubBroker())
-
+    CRONTASK["REDIS_URL"] = os.getenv("REDIS_URL", "redis:///0")
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -140,5 +137,3 @@ STATIC_URL = "static/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
