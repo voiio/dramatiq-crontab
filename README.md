@@ -4,7 +4,7 @@
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="./images/logo-dark.svg">
     <source media="(prefers-color-scheme: light)" srcset="./images/logo-light.svg">
-    <img alt="esimport: Blazing fast ESM compiler and importmap generator" src="./images/logo-light.svg">
+    <img alt="Django crontask: Cron style scheduler for Django's task framework" src="./images/logo-light.svg">
   </picture>
 </p>
 
