@@ -1,8 +1,8 @@
 import datetime
-import zoneinfo
 
 import pytest
 from crontask import interval, scheduler, tasks
+from django.utils.timezone import make_aware
 
 
 def test_heartbeat(caplog):
@@ -14,22 +14,18 @@ def test_heartbeat(caplog):
 def test_cron__stars():
     assert not scheduler.remove_all_jobs()
     assert tasks.cron("* * * * *")(tasks.heartbeat)
-    init = datetime.datetime(2021, 1, 1, 0, 0, 0)
-    assert scheduler.get_jobs()[0].trigger.get_next_fire_time(
-        init, init
-    ) == datetime.datetime(
-        2021, 1, 1, 0, 1, tzinfo=zoneinfo.ZoneInfo(key="Europe/Berlin")
+    init = make_aware(datetime.datetime(2021, 1, 1, 0, 0, 0))
+    assert scheduler.get_jobs()[0].trigger.get_next_fire_time(init, init) == make_aware(
+        datetime.datetime(2021, 1, 1, 0, 1)
     )
 
 
 def test_cron__day_of_week():
     assert not scheduler.remove_all_jobs()
     assert tasks.cron("* * * * Mon")(tasks.heartbeat)
-    init = datetime.datetime(2021, 1, 1, 0, 0, 0)  # Friday
-    assert scheduler.get_jobs()[0].trigger.get_next_fire_time(
-        init, init
-    ) == datetime.datetime(
-        2021, 1, 4, 0, 0, tzinfo=zoneinfo.ZoneInfo(key="Europe/Berlin")
+    init = make_aware(datetime.datetime(2021, 1, 1, 0, 0, 0))  # Friday
+    assert scheduler.get_jobs()[0].trigger.get_next_fire_time(init, init) == make_aware(
+        datetime.datetime(2021, 1, 4, 0, 0)
     )
 
 
@@ -43,28 +39,22 @@ def test_cron__day_of_week():
 def test_cron_day_range(schedule):
     assert not scheduler.remove_all_jobs()
     assert tasks.cron(schedule)(tasks.heartbeat)
-    init = datetime.datetime(2021, 1, 1, 0, 0, 0)  # Friday
-    assert scheduler.get_jobs()[0].trigger.get_next_fire_time(
-        init, init
-    ) == datetime.datetime(
-        2021, 1, 5, 0, 0, tzinfo=zoneinfo.ZoneInfo(key="Europe/Berlin")
+    init = make_aware(datetime.datetime(2021, 1, 1, 0, 0, 0))  # Friday
+    assert scheduler.get_jobs()[0].trigger.get_next_fire_time(init, init) == make_aware(
+        datetime.datetime(2021, 1, 5, 0, 0)
     )
-    init = datetime.datetime(2021, 1, 5, 0, 0, 0)  # Tuesday
-    assert scheduler.get_jobs()[0].trigger.get_next_fire_time(
-        init, init
-    ) == datetime.datetime(
-        2021, 1, 6, 0, 0, tzinfo=zoneinfo.ZoneInfo(key="Europe/Berlin")
+    init = make_aware(datetime.datetime(2021, 1, 5, 0, 0, 0))  # Tuesday
+    assert scheduler.get_jobs()[0].trigger.get_next_fire_time(init, init) == make_aware(
+        datetime.datetime(2021, 1, 6, 0, 0)
     )
 
 
 def test_cron__every_15_minutes():
     assert not scheduler.remove_all_jobs()
     assert tasks.cron("*/15 * * * *")(tasks.heartbeat)
-    init = datetime.datetime(2021, 1, 1, 0, 0, 0)
-    assert scheduler.get_jobs()[0].trigger.get_next_fire_time(
-        init, init
-    ) == datetime.datetime(
-        2021, 1, 1, 0, 15, tzinfo=zoneinfo.ZoneInfo(key="Europe/Berlin")
+    init = make_aware(datetime.datetime(2021, 1, 1, 0, 0, 0))
+    assert scheduler.get_jobs()[0].trigger.get_next_fire_time(init, init) == make_aware(
+        datetime.datetime(2021, 1, 1, 0, 15)
     )
 
 
@@ -89,9 +79,7 @@ def test_cron__error(schedule):
 def test_interval__seconds():
     assert not scheduler.remove_all_jobs()
     assert interval(seconds=30)(tasks.heartbeat)
-    init = datetime.datetime(2021, 1, 1, 0, 0, 0)
-    assert scheduler.get_jobs()[0].trigger.get_next_fire_time(
-        init, init
-    ) == datetime.datetime(
-        2021, 1, 1, 0, 0, 30, tzinfo=zoneinfo.ZoneInfo(key="Europe/Berlin")
+    init = make_aware(datetime.datetime(2021, 1, 1, 0, 0, 0))
+    assert scheduler.get_jobs()[0].trigger.get_next_fire_time(init, init) == make_aware(
+        datetime.datetime(2021, 1, 1, 0, 0, 30)
     )
