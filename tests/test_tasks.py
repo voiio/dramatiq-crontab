@@ -1,13 +1,13 @@
 import datetime
 
 import pytest
-from crontask import interval, scheduler, tasks
 from django.utils.timezone import make_aware
+from dramatiq_crontab import interval, scheduler, tasks
 
 
 def test_heartbeat(caplog):
     with caplog.at_level("INFO"):
-        tasks.heartbeat.func()
+        tasks.heartbeat()
     assert "ﮩ٨ـﮩﮩ٨ـ♡ﮩ٨ـﮩﮩ٨ـ" in caplog.text
 
 
