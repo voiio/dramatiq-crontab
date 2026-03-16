@@ -22,7 +22,7 @@ def kill_softly(signum, frame):
 
 
 class Command(BaseCommand):
-    """Run task scheduler for all tasks with the `cron` decorator."""
+    """Run dramatiq task scheduler for all tasks with the `cron` decorator."""
 
     help = __doc__
 
@@ -42,7 +42,7 @@ class Command(BaseCommand):
         if not options["no_task_loading"]:
             self.load_tasks(options)
         if not options["no_heartbeat"]:
-            importlib.import_module("crontask.tasks")
+            importlib.import_module("dramatiq_crontab.tasks")
             self.stdout.write("Scheduling heartbeat.")
         try:
             if not isinstance(utils.lock, utils.FakeLock):
@@ -70,7 +70,7 @@ class Command(BaseCommand):
             utils.extend_lock,
             IntervalTrigger(seconds=conf.get_settings().LOCK_REFRESH_INTERVAL),
             args=(lock, scheduler),
-            name="contask.utils.lock.extend",
+            name="dramatiq_crontab.utils.lock.extend",
         )
         try:
             scheduler.start()
@@ -87,7 +87,7 @@ class Command(BaseCommand):
         their tasks with the scheduler.
         """
         for app in apps.get_app_configs():
-            if app.name == "contask":
+            if app.name == "dramatiq_crontab":
                 continue
             if app.ready:
                 try:

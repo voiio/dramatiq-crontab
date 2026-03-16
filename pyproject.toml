@@ -3,7 +3,7 @@ requires = ["flit_core>=3.2", "flit_scm", "wheel"]
 build-backend = "flit_scm:buildapi"
 
 [project]
-name = "django-crontask"
+name = "dramatiq-crontab"
 authors = [
   { name = "Rust Saiargaliev", email = "fly.amureki@gmail.com" },
   { name = "Johannes Maron", email = "johannes@maron.family" },
@@ -12,7 +12,7 @@ authors = [
 ]
 readme = "README.md"
 license = { file = "LICENSE" }
-keywords = ["Django", "cron", "tasks", "scheduler"]
+keywords = ["Django", "Dramatiq", "tasks", "scheduler"]
 dynamic = ["version", "description"]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
@@ -27,33 +27,39 @@ classifiers = [
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
-  "Programming Language :: Python :: 3.14",
   "Framework :: Django",
-  "Framework :: Django :: 6.0",
+  "Framework :: Django :: 4.2",
+  "Framework :: Django :: 5.1",
+  "Framework :: Django :: 5.2",
 ]
-requires-python = ">=3.12"
-dependencies = ["apscheduler", "django>=6.0"]
+requires-python = ">=3.9"
+dependencies = ["dramatiq", "apscheduler", "django"]
 
 [project.optional-dependencies]
 test = [
   "pytest",
   "pytest-cov",
   "pytest-django",
+  "dramatiq",
+  "backports.zoneinfo;python_version<'3.9'"
 ]
 sentry = ["sentry-sdk"]
 redis = ["redis"]
 
 [project.urls]
-Project-URL = "https://github.com/codingjoe/django-crontask"
-Changelog = "https://github.com/codingjoe/django-crontask/releases"
+Project-URL = "https://github.com/voiio/dramatiq-crontab"
+Changelog = "https://github.com/voiio/dramatiq-crontab/releases"
 
 [tool.flit.module]
-name = "crontask"
+name = "dramatiq_crontab"
 
 [tool.setuptools_scm]
-write_to = "crontask/_version.py"
+write_to = "dramatiq_crontab/_version.py"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -62,13 +68,13 @@ testpaths = ["tests"]
 DJANGO_SETTINGS_MODULE = "tests.testapp.settings"
 
 [tool.coverage.run]
-source = ["crontask"]
+source = ["dramatiq_crontab"]
 
 [tool.coverage.report]
 show_missing = true
 
 [tool.ruff]
-src = ["crontask", "tests"]
+src = ["dramatiq_crontab", "tests"]
 
 [tool.ruff.lint]
 select = [

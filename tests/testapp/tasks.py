@@ -1,8 +1,8 @@
-from crontask import cron
-from django.tasks import task
+import dramatiq
+from dramatiq_crontab import cron
 
 
 @cron("*/5 * * * *")
-@task
+@dramatiq.actor
 def my_task():
     my_task.logger.info("Hello World!")

@@ -1,4 +1,4 @@
-"""Cron style scheduler for Django's task framework."""
+"""Cron style scheduler for asynchronous Dramatiq tasks in Django."""
 
 from unittest.mock import Mock
 
@@ -42,7 +42,7 @@ def cron(schedule):
 
     Usage:
         @cron("0 0 * * *")
-        @task
+        @dramatiq.actor
         def cron_test():
             print("Cron test")
 
@@ -55,7 +55,7 @@ def cron(schedule):
     The monitors timezone should be set to Europe/Berlin.
     """
 
-    def decorator(task):
+    def decorator(actor):
         *_, day_schedule = schedule.split(" ")
 
         # CronTrigger uses Python's timezone dependent first weekday,
@@ -67,26 +67,19 @@ def cron(schedule):
             )
 
         if monitor is not None:
-            task = type(task)(
-                priority=task.priority,
-                func=monitor(task.name)(task.func),
-                queue_name=task.queue_name,
-                backend=task.backend,
-                takes_context=task.takes_context,
-                run_after=task.run_after,
-            )
+            actor.fn = monitor(actor.actor_name)(actor.fn)
 
         scheduler.add_job(
-            task.enqueue,
+            actor.send,
             CronTrigger.from_crontab(
                 schedule,
                 timezone=timezone.get_default_timezone(),
             ),
-            name=task.name,
+            name=actor.actor_name,
         )
         # We don't add the Sentry monitor on the actor itself, because we only want to
         # monitor the cron job, not the actor itself, or it's direct invocations.
-        return task
+        return actor
 
     return decorator
 
@@ -97,7 +90,7 @@ def interval(*, seconds):
 
     Usage:
         @interval(seconds=30)
-        @task
+        @dramatiq.actor
         def interval_test():
             print("Interval test")
 
@@ -109,25 +102,18 @@ def interval(*, seconds):
     For an interval that is consistent with the clock, use the `cron` decorator instead.
     """
 
-    def decorator(task):
+    def decorator(actor):
         if monitor is not None:
-            task = type(task)(
-                priority=task.priority,
-                func=monitor(task.name)(task.func),
-                queue_name=task.queue_name,
-                backend=task.backend,
-                takes_context=task.takes_context,
-                run_after=task.run_after,
-            )
+            actor.fn = monitor(actor.actor_name)(actor.fn)
 
         scheduler.add_job(
-            task.enqueue,
+            actor.send,
             IntervalTrigger(
                 seconds=seconds,
                 timezone=timezone.get_default_timezone(),
             ),
-            name=task.name,
+            name=actor.actor_name,
         )
-        return task
+        return actor
 
     return decorator
