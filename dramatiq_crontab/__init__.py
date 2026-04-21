@@ -75,9 +75,9 @@ def cron(schedule):
                 "schedule": {"type": "crontab", "value": schedule},
                 "timezone": str(timezone.get_default_timezone()),
             }
-            actor.fn = monitor(
-                actor.actor_name, monitor_config=monitor_config
-            )(actor.fn)
+            actor.fn = monitor(actor.actor_name, monitor_config=monitor_config)(
+                actor.fn
+            )
 
         scheduler.add_job(
             actor.send,
