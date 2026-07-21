@@ -36,6 +36,15 @@ class LazyBlockingScheduler(BlockingScheduler):
 scheduler = LazyBlockingScheduler()
 
 
+def _interval_schedule(seconds):
+    """Convert an interval in seconds to a Sentry monitor schedule, if expressible."""
+    # Sentry also supports week/month/year, omitted as unrealistic for dramatiq intervals.
+    for unit, size in (("day", 86400), ("hour", 3600), ("minute", 60)):
+        if seconds >= size and seconds % size == 0:
+            return {"type": "interval", "value": seconds // size, "unit": unit}
+    return None
+
+
 def cron(schedule):
     """
     Run task on a scheduler with a cron schedule.
@@ -46,13 +55,8 @@ def cron(schedule):
         def cron_test():
             print("Cron test")
 
-
-    Please don't forget to set up a sentry monitor for the actor, otherwise you won't
-    get any notifications if the cron job fails.
-
-    The monitor slug is your actor name, the schedule should be set to the same
-    cron schedule as the cron decorator. The schedule type should be set to cron.
-    The monitors timezone should be set to Europe/Berlin.
+    If ``sentry-sdk`` is installed, a Sentry cron monitor is automatically
+    upserted on the first check-in using the actor name as the monitor slug.
     """
 
     def decorator(actor):
@@ -67,7 +71,13 @@ def cron(schedule):
             )
 
         if monitor is not None:
-            actor.fn = monitor(actor.actor_name)(actor.fn)
+            monitor_config = {
+                "schedule": {"type": "crontab", "value": schedule},
+                "timezone": str(timezone.get_default_timezone()),
+            }
+            actor.fn = monitor(actor.actor_name, monitor_config=monitor_config)(
+                actor.fn
+            )
 
         scheduler.add_job(
             actor.send,
@@ -100,11 +110,23 @@ def interval(*, seconds):
     12:00:45.
 
     For an interval that is consistent with the clock, use the `cron` decorator instead.
+
+    If ``sentry-sdk`` is installed, a Sentry cron monitor is automatically
+    upserted on the first check-in using the actor name as the monitor slug.
+    Sub-minute intervals skip the auto-upsert (Sentry's smallest unit is minute)
+    and fall back to check-ins only.
     """
 
     def decorator(actor):
         if monitor is not None:
-            actor.fn = monitor(actor.actor_name)(actor.fn)
+            monitor_kwargs = {}
+            schedule = _interval_schedule(seconds)
+            if schedule is not None:
+                monitor_kwargs["monitor_config"] = {
+                    "schedule": schedule,
+                    "timezone": str(timezone.get_default_timezone()),
+                }
+            actor.fn = monitor(actor.actor_name, **monitor_kwargs)(actor.fn)
 
         scheduler.add_job(
             actor.send,
