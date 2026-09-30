@@ -29,8 +29,10 @@ class LazyBlockingScheduler(BlockingScheduler):
         if self.state == STATE_STOPPED:
             # We don't want to schedule jobs before the scheduler is started.
             self._logger = Mock()
-        super().add_job(*args, **kwargs)
-        self._logger = logger
+        try:
+            return super().add_job(*args, **kwargs)
+        finally:
+            self._logger = logger
 
 
 scheduler = LazyBlockingScheduler()
