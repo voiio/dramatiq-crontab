@@ -37,12 +37,12 @@ classifiers = [
   "Framework :: Django :: 6.1",
 ]
 requires-python = ">=3.10"
-dependencies = ["dramatiq", "apscheduler", "django>=5.2.17"]
+dependencies = ["dramatiq>=1.18.0", "apscheduler>=3.11.0,<4", "django>=5.2.17"]
 
 [project.optional-dependencies]
-test = ["pytest", "pytest-cov", "pytest-django"]
-sentry = ["sentry-sdk"]
-redis = ["redis"]
+test = ["pytest>=9.0.3", "pytest-cov>=6.0.0", "pytest-django>=4.11.1"]
+sentry = ["sentry-sdk>=2.8.0"]
+redis = ["redis>=5.0.0"]
 
 [project.urls]
 Project-URL = "https://github.com/voiio/dramatiq-crontab"
@@ -55,7 +55,7 @@ name = "dramatiq_crontab"
 write_to = "dramatiq_crontab/_version.py"
 
 [tool.pytest.ini_options]
-minversion = "6.0"
+minversion = "9.0.3"
 addopts = "--cov --tb=short -rxs"
 testpaths = ["tests"]
 DJANGO_SETTINGS_MODULE = "tests.testapp.settings"
