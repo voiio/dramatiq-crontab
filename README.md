@@ -19,7 +19,7 @@ You need to have [Dramatiq] installed and setup properly.
 ```ShellSession
 python3 -m pip install dramatiq-crontab
 # or
-python3 -m pip install dramatiq-crontab[sentry]  # with sentry cron monitor support
+python3 -m pip install 'dramatiq-crontab[sentry]'  # with sentry cron monitor support
 ```
 
 Add `dramatiq_crontab` to your `INSTALLED_APPS` in `settings.py`:
@@ -32,7 +32,7 @@ INSTALLED_APPS = [
 ]
 ```
 
-Finally, you lauch the scheduler in a separate process:
+Finally, launch the scheduler in a separate process:
 
 ```ShellSession
 python3 manage.py crontab
@@ -44,6 +44,16 @@ If you use Redis as a broker, you can use Redis as a lock backend as well.
 The lock backend is used to prevent multiple instances of the scheduler
 from running at the same time. This is important if you have multiple
 instances of your application running.
+
+Install the Redis extra, or combine it with Sentry support:
+
+```ShellSession
+python3 -m pip install 'dramatiq-crontab[redis]'
+# or
+python3 -m pip install 'dramatiq-crontab[redis,sentry]'
+```
+
+Then configure the Redis URL:
 
 ```python
 # settings.py
