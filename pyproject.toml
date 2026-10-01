@@ -16,7 +16,6 @@ keywords = ["Django", "Dramatiq", "tasks", "scheduler"]
 dynamic = ["version", "description"]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
-  "Programming Language :: Python",
   "Environment :: Web Environment",
   "License :: OSI Approved :: BSD License",
   "Intended Audience :: Developers",
@@ -27,27 +26,21 @@ classifiers = [
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Framework :: Django",
-  "Framework :: Django :: 4.2",
-  "Framework :: Django :: 5.1",
   "Framework :: Django :: 5.2",
+  "Framework :: Django :: 6.0",
+  "Framework :: Django :: 6.1",
 ]
-requires-python = ">=3.9"
-dependencies = ["dramatiq", "apscheduler", "django"]
+requires-python = ">=3.10"
+dependencies = ["dramatiq", "apscheduler", "django>=5.2.17"]
 
 [project.optional-dependencies]
-test = [
-  "pytest",
-  "pytest-cov",
-  "pytest-django",
-  "dramatiq",
-  "backports.zoneinfo;python_version<'3.9'"
-]
+test = ["pytest", "pytest-cov", "pytest-django"]
 sentry = ["sentry-sdk"]
 redis = ["redis"]
 
