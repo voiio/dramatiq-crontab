@@ -1,6 +1,9 @@
+from threading import Event, Thread
 from unittest.mock import Mock
 
 import pytest
+from apscheduler.events import EVENT_JOB_ERROR
+from dramatiq_crontab import LazyBlockingScheduler
 from dramatiq_crontab import utils
 
 
@@ -20,6 +23,39 @@ def test_extend_lock__error():
         utils.extend_lock(lock, scheduler)
     assert lock.extend.call_count == 1
     assert scheduler.shutdown.call_count == 1
+
+
+def test_extend_lock__lost_lock_stops_scheduler():
+    lock = Mock()
+    error = utils.LockNotOwnedError("Lock ownership lost")
+    lock.extend.side_effect = error
+    scheduler = LazyBlockingScheduler()
+    job_finished = Event()
+    errors = []
+
+    def record_error(event):
+        errors.append(event.exception)
+        job_finished.set()
+
+    scheduler.add_listener(record_error, EVENT_JOB_ERROR)
+    scheduler.add_job(
+        utils.extend_lock, "interval", seconds=0.01, args=(lock, scheduler)
+    )
+    thread = Thread(target=scheduler.start, daemon=True)
+    thread.start()
+    try:
+        assert job_finished.wait(timeout=3), "Lock refresh job did not finish"
+        thread.join(timeout=3)
+        assert not thread.is_alive(), "Blocking scheduler did not terminate"
+        assert not scheduler.running
+        assert errors == [error]
+        lock.extend.assert_called_once()
+    finally:
+        if scheduler.running:
+            scheduler.shutdown(wait=False)
+        # A failed shutdown can leave the blocking loop asleep.
+        scheduler.wakeup()
+        thread.join(timeout=3)
 
 
 class TestFakeLock:
