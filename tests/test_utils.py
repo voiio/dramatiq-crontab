@@ -3,8 +3,7 @@ from unittest.mock import Mock
 
 import pytest
 from apscheduler.events import EVENT_JOB_ERROR
-from dramatiq_crontab import LazyBlockingScheduler
-from dramatiq_crontab import utils
+from dramatiq_crontab import LazyBlockingScheduler, utils
 
 
 def test_extend_lock():
