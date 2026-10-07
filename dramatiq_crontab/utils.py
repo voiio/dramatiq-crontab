@@ -41,5 +41,6 @@ def extend_lock(lock, scheduler):
     try:
         lock.extend(get_settings().LOCK_TIMEOUT, True)
     except LockError:
-        scheduler.shutdown()
+        # This job runs in an executor thread, which cannot join itself.
+        scheduler.shutdown(wait=False)
         raise
