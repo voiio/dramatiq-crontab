@@ -4,6 +4,11 @@ on:
     branches:
       - main
   pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   dist:
     runs-on: ubuntu-latest
@@ -11,24 +16,28 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v7
-        with:
-          python-version: "3.14"
+          persist-credentials: false
       - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          python-version: "3.15"
       - run: uv build
       - run: uv run --no-project --with twine twine check dist/*
       - uses: actions/upload-artifact@v7
         with:
           path: dist/*
   pytest:
+    permissions:
+      contents: read
+      id-token: write
     strategy:
+      fail-fast: false
       matrix:
         python-version:
-          - "3.10"
           - "3.11"
           - "3.12"
           - "3.13"
           - "3.14"
+          - "3.15"
         django-version:
           - "5.2" # LTS
           - "6.0"
@@ -41,16 +50,12 @@ jobs:
         resolution:
           - "highest"
         exclude:
-          - python-version: "3.10"
-            django-version: "6.0"
-          - python-version: "3.10"
-            django-version: "6.1"
           - python-version: "3.11"
             django-version: "6.0"
           - python-version: "3.11"
             django-version: "6.1"
         include:
-          - python-version: "3.10"
+          - python-version: "3.11"
             django-version: "5.2"
             extras: "test,sentry,redis"
             resolution: "lowest-direct"
@@ -59,26 +64,30 @@ jobs:
         image: redis:8
         ports:
           - 6379:6379
-        options: --entrypoint redis-server
+        options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
     env:
-      REDIS_URL: redis:///0
+      REDIS_URL: redis://localhost:6379/0
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v7
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v10.2.0
         with:
           python-version: ${{ matrix.python-version }}
-      - uses: astral-sh/setup-uv@v10.2.0
+      - run: uv venv
       - if: matrix.resolution == 'highest'
-        run: uv pip install --system ".[${{ matrix.extras }}]" "django~=${{ matrix.django-version }}.0"
+        run: uv pip install ".[${{ matrix.extras }}]" "django~=${{ matrix.django-version }}.0"
       - if: matrix.resolution == 'lowest-direct'
         run: |
-          uv pip install --system --resolution lowest-direct -r pyproject.toml --all-extras
-          uv pip install --system --no-deps .
-      - run: uv pip list --system
+          uv pip install --resolution lowest-direct -r pyproject.toml --all-extras "django~=${{ matrix.django-version }}.0"
+          uv pip install --no-deps .
+      - run: uv pip list
       - run: uv run --no-project python -m pytest
       - uses: codecov/codecov-action@v7
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          use_oidc: true
+          files: coverage.xml
+          fail_ci_if_error: true
+          flags: python-${{ matrix.python-version }}-django-${{ matrix.django-version }}-${{ matrix.resolution }}
