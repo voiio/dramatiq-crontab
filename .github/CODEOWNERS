@@ -1,6 +1,6 @@
 # Dependencies
 ## Python
-pyproject.toml @herrbenesch @amureki
+pyproject.toml @herrbenesch
 ## GitHub Actions
-.github/workflows/ci.yml @herrbenesch @amureki
-.github/workflows/release.yml @herrbenesch @amureki
+.github/workflows/ci.yml @herrbenesch
+.github/workflows/release.yml @herrbenesch
