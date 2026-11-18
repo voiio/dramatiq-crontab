@@ -13,7 +13,7 @@ jobs:
   dist:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -22,7 +22,7 @@ jobs:
           python-version: "3.15"
       - run: uv build
       - run: uv run --no-project --with twine twine check dist/*
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v7.0.2
         with:
           path: dist/*
   pytest:
@@ -69,7 +69,7 @@ jobs:
       REDIS_URL: redis://localhost:6379/0
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -85,9 +85,22 @@ jobs:
           uv pip install --no-deps .
       - run: uv pip list
       - run: uv run --no-project python -m pytest
-      - uses: codecov/codecov-action@v7
+      - uses: codecov/codecov-action@v7.1.1
         with:
           use_oidc: true
           files: coverage.xml
           fail_ci_if_error: true
           flags: python-${{ matrix.python-version }}-django-${{ matrix.django-version }}-${{ matrix.resolution }}
+  # Fails when .github/workflows/actions.lock is out of sync with the
+  # workflows or a locked pin no longer verifies upstream.
+  lockfile:
+    runs-on: ubuntu-slim
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - run: gh extension install github/gh-actions-lock --pin v0.4.1
+      - run: gh actions-lock --verify

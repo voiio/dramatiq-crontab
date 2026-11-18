@@ -4,3 +4,4 @@ pyproject.toml @herrbenesch
 ## GitHub Actions
 .github/workflows/ci.yml @herrbenesch
 .github/workflows/release.yml @herrbenesch
+.github/workflows/actions.lock @herrbenesch
